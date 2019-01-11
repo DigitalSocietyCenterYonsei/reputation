@@ -1,0 +1,3 @@
+[submodule "submission/base"]
+	path = submission/base
+	url = git@github.com:jongbinjung/reputation-base
