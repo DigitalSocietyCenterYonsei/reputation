@@ -9,6 +9,7 @@ theme_set(theme_bw())
 
 DATA_DIR <- normalizePath("../data")
 PLOT_DIR <- normalizePath("../figs", mustWork = FALSE)
+TARGET_DIR <- file.path(DATA_DIR, "fig")
 
 # Methods to highlight in plots
 MAIN_METHODS <- c("BSD_SR", "BSD")
@@ -27,8 +28,41 @@ check_path <- function (path) {
   path
 }
 
+# PLOT: Baseline comparison -----------------------------------------------
+results_df <- file.path(DATA_DIR, "fig_4.xlsx") %>%
+  read_excel() %>%
+  gather(method, rho, BL, RS)
+
+p_results <- ggplot(results_df, aes(x = method, y = rho)) +
+  geom_boxplot() +
+  scale_y_continuous("Rank correlation\n", limits = c(.8, .95)) +
+  scale_x_discrete("\nMethod") +
+  facet_wrap(~ set, labeller = labeller(
+      "set" = function(s) paste("Parameter set", s))
+  )
+ggsave(file.path(PLOT_DIR, "initial_results.pdf") %>% check_path,
+       plot = p_results,
+       width = 7, height = 5)
+
+# PLOT: Iteration evolution -----------------------------------------------
+iters_df <- file.path(DATA_DIR, "fig_5.xlsx") %>%
+  read_excel()
+
+p_iters <- ggplot(iters_df, aes(x = iter, y = rho)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous("Rank correlation\n") +
+  scale_x_continuous("\nIteration", breaks = 1:10) +
+  facet_wrap(~ set, labeller = labeller(
+      "set" = function(s) paste("Parameter set", s))
+  ) +
+  theme(panel.grid.minor = element_blank())
+
+ggsave(file.path(PLOT_DIR, "iterations.pdf") %>% check_path,
+       plot = p_iters,
+       width = 7, height = 3)
+
 # PLOT: Detailed results for attack types ---------------------------------
-TARGET_DIR <- file.path(DATA_DIR, "fig")
 original_files <- list.files(file.path(DATA_DIR, "fig_6-11"), full.names = TRUE)
 
 attacks_df <- map_dfr(original_files, function(path) {
