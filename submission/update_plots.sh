@@ -27,4 +27,6 @@ function copy_figures {
 
 copy_figures \
   "$1" \
+  initial_results \
+  iterations \
   attack_results
