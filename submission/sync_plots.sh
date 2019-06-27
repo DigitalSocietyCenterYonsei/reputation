@@ -6,5 +6,5 @@
 ./update_plots.sh $1 && \
   cd "$1" && \
   git pull && \
-  git commit *.pdf -m "Update plots and plot logs" && \
+  git commit -am "Update plots and plot logs" && \
   git push
