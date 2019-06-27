@@ -36,10 +36,15 @@ results_df <- file.path(DATA_DIR, "fig_4.xlsx") %>%
 p_results <- ggplot(results_df, aes(x = method, y = rho)) +
   geom_boxplot() +
   scale_y_continuous("Rank correlation\n", limits = c(.8, .95)) +
-  scale_x_discrete("\nMethod") +
+  scale_x_discrete("\nMethod",
+                   breaks = c("BL", "RS"),
+                   labels = c("Baseline", "Rating separation")) +
   facet_wrap(~ set, labeller = labeller(
       "set" = function(s) paste("Parameter set", s))
-  )
+  ) +
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 14),
+        strip.text = element_text(size = 14))
 ggsave(file.path(PLOT_DIR, "initial_results.pdf") %>% check_path,
        plot = p_results,
        width = 7, height = 5)
@@ -56,14 +61,17 @@ p_iters <- ggplot(iters_df, aes(x = iter, y = rho)) +
   facet_wrap(~ set, labeller = labeller(
       "set" = function(s) paste("Parameter set", s))
   ) +
-  theme(panel.grid.minor = element_blank())
-
+  theme(panel.grid.minor = element_blank(),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 12),
+        strip.text = element_text(size = 14))
 ggsave(file.path(PLOT_DIR, "iterations.pdf") %>% check_path,
        plot = p_iters,
        width = 7, height = 3)
 
 # PLOT: Detailed results for attack types ---------------------------------
-original_files <- list.files(file.path(DATA_DIR, "fig_6-11"), full.names = TRUE)
+original_files <- list.files(file.path(DATA_DIR, "fig_6-11"),
+                             full.names = TRUE)
 
 attacks_df <- map_dfr(original_files, function(path) {
     method <- tools::file_path_sans_ext(basename(path))
@@ -78,15 +86,34 @@ attacks_df <- map_dfr(original_files, function(path) {
 
 p_attacks <- ggplot(attacks_df, aes(x = attack_rate, y = rho, group = method)) +
   geom_hline(yintercept = 0, size = 1.5, color = "grey92") +
-  geom_line(aes(color = method, linetype = method_type)) +
+  geom_line(aes(color = method, linetype = method)) +
+  # geom_line(aes(color = method, linetype = method_type)) +
   scale_x_continuous("\nRate of attack",
                      labels = scales::percent_format(accuracy = 1),
                      limits = c(.1, .9), breaks = seq(.1, .9, .2)) +
-  scale_y_continuous("Rank correlation\n") +
-  scale_linetype_manual(limits = c("bench", "main"),
-                        values = c("22", "solid"), guide = FALSE) +
-  facet_grid(pattern ~ scheme, scales = "free_y")
-
+  scale_y_continuous("Rank correlation\n",
+                     labels = scales::number_format(0.1)) +
+  scale_color_brewer(
+      "Method",
+      palette = "Dark2",
+      limits = c("BSD", "BSD_SR", "BL", "BRS", "PA", "ICLUB"),
+      breaks = c("BSD", "BSD_SR", "BL", "BRS", "PA", "ICLUB"),
+      labels = c("IW", "RS&IW", "Baseline", "BRS", "PA", "iCLUB")
+  ) +
+  scale_linetype_manual(
+      "Method",
+      limits = c("BSD", "BSD_SR", "BL", "BRS", "PA", "ICLUB"),
+      values = c("solid", "solid", "53", "22", "22", "22"),
+      breaks = c("BSD", "BSD_SR", "BL", "BRS", "PA", "ICLUB"),
+      labels = c("IW", "RS&IW", "Baseline", "BRS", "PA", "iCLUB")
+  ) +
+  facet_grid(pattern ~ scheme, scales = "free_y") +
+  theme(panel.grid.minor = element_blank(),
+        panel.spacing.x = unit(3, "mm"),
+        panel.spacing.y = unit(2, "mm"),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 8),
+        strip.text = element_text(size = 12))
 ggsave(file.path(PLOT_DIR, "attack_results.pdf") %>% check_path,
        plot = p_attacks,
        width = 8, height = 8)
